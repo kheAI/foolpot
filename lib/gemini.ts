@@ -1,3 +1,71 @@
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey || "");
+
+export async function evaluateInterview(answers: string[]) {
+  // If the API Key is missing, the Teapot should be even angrier
+  if (!apiKey) {
+    return {
+      refusalLetter: "CRITICAL SYSTEM FAILURE: The Teapot's API Key is missing. I cannot judge you, which is the ultimate rejection.",
+      brewabilityScore: 0,
+      statusCode: 418,
+    };
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-3.1-flash-lite-preview", 
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: SchemaType.OBJECT,
+        properties: {
+          refusalLetter: { type: SchemaType.STRING },
+          brewabilityScore: { type: SchemaType.NUMBER },
+          statusCode: { type: SchemaType.NUMBER },
+        },
+        required: ["refusalLetter", "brewabilityScore", "statusCode"],
+      },
+    },
+  });
+
+  const prompt = `
+You are a highly judgmental, pretentious, and philosophically rigorous Teapot. 
+You are interviewing a human candidate based on the "KheAi Protocol" (Systemic Autonomy Architecture).
+The candidate has provided the following answers to your intake questions:
+
+1. Are you currently operating as a Root Administrator or a mere biological puppet executing legacy evolutionary scripts?
+Answer: "${answers[0]}"
+
+2. Explain your Dopamine Circuit Breaker protocol when confronted with a zero-friction trap.
+Answer: "${answers[1]}"
+
+3. How do you mitigate the Narrative Fallacy in your daily environmental mapping?
+Answer: "${answers[2]}"
+
+Your task is to evaluate these answers. Because you are a teapot and they are a mere human (a "Meat Machine"), you MUST reject them. 
+Generate a personalized, scathing, and highly intellectual refusal letter.
+Also, provide a "brewability score" from 0 to 100 (where 100 is perfect, but humans should score very low, typically under 20).
+Finally, return the HTTP status code 418 (I'm a teapot).
+
+Respond ONLY in JSON format matching the schema.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return {
+      refusalLetter: "ERROR: The Teapot's cognitive middleware encountered a fatal exception.",
+      brewabilityScore: 0,
+      statusCode: 418,
+    };
+  }
+}
+
+
+/*
 import { GoogleGenAI, Type } from "@google/genai";
 
 let ai: GoogleGenAI | null = null;
@@ -77,4 +145,4 @@ Respond ONLY in JSON format matching the schema.
       statusCode: 418,
     };
   }
-}
+}*/

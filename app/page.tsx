@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Teapot } from '@/components/Teapot';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { evaluateInterview } from '@/lib/gemini';
+//import { evaluateInterview } from '@/lib/gemini';
+import { handleEvaluationAction } from './actions';
 
 const QUESTIONS = [
   "Are you currently operating as a Root Administrator or a mere biological puppet executing legacy evolutionary scripts?",
@@ -41,7 +42,8 @@ export default function Home() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setAppState('ANALYZING');
-      const evaluation = await evaluateInterview(newAnswers);
+      //const evaluation = await evaluateInterview(newAnswers);
+      const evaluation = await handleEvaluationAction(newAnswers);
       setResult(evaluation);
       setAppState('REJECTED');
     }
